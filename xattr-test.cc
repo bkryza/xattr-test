@@ -1,4 +1,5 @@
 #include "base64.h"
+#include "blns.h"
 
 #include <cerrno>
 #include <exception>
@@ -11,7 +12,8 @@
 constexpr auto base64SampleImage =
     R"(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)";
 
-constexpr auto utf8LoremIpsum = R"(चिदंश मुश्किले अर्थपुर्ण पसंद स्थिति आशाआपस सोफ़्टवेर बलवान मानव बनाने वास्तव कार्यसिधान्तो आपके उसके तरहथा। प्राथमिक मजबुत बनाकर करते निर्माण आंतरजाल भाषा बढाता गटकउसि निर्देश विचारशिलता रखति शारिरिक व्रुद्धि प्रोत्साहित करता। उन्हे एकत्रित जानकारी सुस्पश्ट कारन उनका सभीकुछ निरपेक्ष लाभान्वित डाले। संपादक विकेन्द्रियकरण समूह बनाना ध्येय मुखय दिशामे बातसमय व्याख्या
+constexpr auto utf8LoremIpsum =
+    R"(चिदंश मुश्किले अर्थपुर्ण पसंद स्थिति आशाआपस सोफ़्टवेर बलवान मानव बनाने वास्तव कार्यसिधान्तो आपके उसके तरहथा। प्राथमिक मजबुत बनाकर करते निर्माण आंतरजाल भाषा बढाता गटकउसि निर्देश विचारशिलता रखति शारिरिक व्रुद्धि प्रोत्साहित करता। उन्हे एकत्रित जानकारी सुस्पश्ट कारन उनका सभीकुछ निरपेक्ष लाभान्वित डाले। संपादक विकेन्द्रियकरण समूह बनाना ध्येय मुखय दिशामे बातसमय व्याख्या
 नवंबर अपने संस्था आवश्यक उपलब्ध करता आशाआपस दिनांक बनाने सकती बाजार खयालात ऎसाजीस उनका सुचना गुजरना पुस्तक मुश्किले आजपर ध्येय पुस्तक किएलोग आंतरकार्यक्षमता
 आशाआपस असरकारक कर्य करता। जोवे पहेला उपेक्ष समस्याए भेदनक्षमता अतित समजते संस्था प्रमान विकेन्द्रियकरण बढाता द्वारा यन्त्रालय चाहे तकनिकल दर्शाता हार्डवेर आपको सुचना जाता असरकारक अविरोधता लाभान्वित बाजार जिम्मे प्रदान व्यवहार समाजो अतित एसेएवं सोफ़्टवेर अंग्रेजी सीमित गएआप एकएस आवश्यक उसीएक् निरपेक्ष हिंदी
 उपलब्ध नयेलिए सामूहिक सादगि सुनत नीचे बनाना ब्रौशर दिनांक पुष्टिकर्ता भारतीय किएलोग केन्द्रित साधन बाटते सभिसमज बिन्दुओ मार्गदर्शन विकास जाएन वर्णन अपने है।अभी प्राप्त स्थापित विकेन्द्रित सुचनाचलचित्र ढांचामात्रुभाषा करती प्राण विभाग मानव असक्षम वैश्विक उपलब्धता और्४५० कार्यसिधान्तो चुनने जाने प्रति प्रमान वर्तमान समस्याए सकता गुजरना निर्देश विश्लेषण बिना होसके देखने स्थिति सोफ़तवेर सकती
@@ -21,6 +23,9 @@ constexpr auto utf8LoremIpsum = R"(चिदंश मुश्किले अ�
 मजबुत बाधा निर्माण मुश्किले भाषाओ तरहथा। पुर्णता अन्तरराष्ट्रीयकरन सकते किएलोग अधिकांश यन्त्रालय पहोच नवंबर ढांचा बहुत वर्णित विकेन्द्रियकरण जिसकी जागरुक सोफ़तवेर उशकी हमारी वर्ष पुर्णता व्रुद्धि संस्क्रुति बारे प्रति सभिसमज विश्वव्यापि जोवे उदेशीत समस्याए खरिदे पहोचने संपुर्ण प्रव्रुति एवम् बाजार प्राप्त अन्तरराष्ट्रीयकरन पहोच। नीचे विकासक्षमता विकेन्द्रियकरण आंतरकार्यक्षमता प्रति वर्ष मानसिक उसीएक् जैसी जिसकी
 प्रति सहायता सम्पर्क प्रतिबध देकर होभर गटकउसि पासपाई भोगोलिक सदस्य रचना उदेशीत पहोचने अंतर्गत विकास मर्यादित केन्द्रित केन्द्रिय लिये बढाता सके। सदस्य पुष्टिकर्ता विकासक्षमता ।क हमारी और्४५० बीसबतेबोध ज्यादा रहारुप परिभाषित आजपर विश्व पहोच। किके सारांश दिनांक हिंदी वहहर लक्ष्य प्रमान ऎसाजीस हमारि एकएस जिम्मे गुजरना प्राधिकरन
 सादगि सकते सुविधा मुश्किले अनुकूल पुस्तक सिद्धांत कैसे लेकिन बाजार करेसाथ वातावरण उपयोगकर्ता जाने हमारि एकएस गटकउसि कार्यलय जनित संपादक उपलब्ध विभाजनक्षमता बढाता चिदंश पढने उद्योग आधुनिक वास्तविक मानव एसलिये तकनीकी निर्माण उन्हे सम्पर्क सिद्धांत एवम् खरिदे जाने दिशामे वर्णित विवरण संदेश दोषसके सभीकुछ बेंगलूर सेऔर)";
+
+static int __total_tests = 0;
+static int __failed_count = 0;
 
 template <typename... Ts> void LOG(Ts &&... args) {
   int dummy[] = {0, ((std::cout << args), 0)...};
@@ -63,27 +68,53 @@ std::string get_xattr(std::string file, std::string name) {
 
 void EXPECT_XATTR_SET(std::string MSG, std::string F, std::string N,
                       std::string V) {
+  __total_tests++;
   try {
     set_xattr(F, N, V, 0);
-    if (V != get_xattr(F, N)) {
-      LOG(MSG, "...", "Failed -- ", V, "!=", get_xattr(F, N));
+    auto xattr = get_xattr(F, N);
+    if (V != xattr) {
+      LOG(MSG, "...", "Failed -- ", V, " != ", xattr);
+      __failed_count++;
     } else {
       LOG(MSG, "...", "OK");
     }
   } catch (std::runtime_error &e) {
     LOG(MSG, "...", "Failed -- ", e.what());
+    __failed_count++;
+  }
+}
+
+void EXPECT_XATTR_SET_QUOTES(std::string MSG, std::string F, std::string N,
+                      std::string V) {
+  __total_tests++;
+  try {
+    set_xattr(F, N, V, 0);
+    auto xattr = std::string("\"")+get_xattr(F, N)+"\"";
+    if (V != xattr) {
+      LOG(MSG, "...", "Failed -- ", V, " != ", xattr);
+      __failed_count++;
+    } else {
+      LOG(MSG, "...", "OK");
+    }
+  } catch (std::runtime_error &e) {
+    LOG(MSG, "...", "Failed -- ", e.what());
+    __failed_count++;
   }
 }
 
 void EXPECT_XATTR_NOTSET(std::string MSG, std::string F, std::string N,
                          std::string V) {
   {
+  __total_tests++;
     try {
       set_xattr(F, N, V, 0);
-      if (V != get_xattr(F, N)) {
-        LOG(MSG, "...", "Failed -- ", V, "!=", get_xattr(F, N));
+      auto xattr = get_xattr(F, N);
+      if (V != xattr) {
+        LOG(MSG, "...", "Failed -- ", V, " != ", xattr);
+        __failed_count++;
       } else {
         LOG(MSG, "...", "Failed -- ", "Attribute set");
+        __failed_count++;
       }
     } catch (std::runtime_error &e) {
       LOG(MSG, "...", "OK");
@@ -93,10 +124,12 @@ void EXPECT_XATTR_NOTSET(std::string MSG, std::string F, std::string N,
 
 void EXPECT_XATTR_NOTREPLACED(std::string MSG, std::string F, std::string N,
                               std::string V) {
+  __total_tests++;
   try {
     set_xattr(F, N, V, XATTR_REPLACE);
     LOG(MSG, "...",
         "Failed -- Attribute should not be created if it didn't exist already");
+    __failed_count++;
   } catch (std::runtime_error &e) {
     LOG(MSG, "...", "OK");
   }
@@ -104,10 +137,12 @@ void EXPECT_XATTR_NOTREPLACED(std::string MSG, std::string F, std::string N,
 
 void EXPECT_XATTR_NOTCREATED(std::string MSG, std::string F, std::string N,
                              std::string V) {
+  __total_tests++;
   try {
     set_xattr(F, N, V, XATTR_CREATE);
     LOG(MSG, "...",
         "Failed -- Attribute should not be set if it existed already");
+    __failed_count++;
   } catch (std::runtime_error &e) {
     LOG(MSG, "...", "OK");
   }
@@ -131,7 +166,7 @@ int main(int argc, char **argv) {
       "jsonInvalidObjectString", "{{{{{}");
 
   EXPECT_XATTR_SET(
-      "Setting attribute with Json string should be properly escaped", argv[1],
+      "Setting attribute with inner quotes string should be properly escaped", argv[1],
       "jsonString", R"(asdasd"adsdas'asdda)");
 
   EXPECT_XATTR_SET("Setting attribute with Json number value should work",
@@ -152,6 +187,28 @@ int main(int argc, char **argv) {
   EXPECT_XATTR_SET("Setting attribute with any characters should work",
                    argv[1], "jsonStringSymbols",
                    R"(!@#O!@O#Y!OI@U!@*!*@"<,...,\t\n\\00\0\0\0?><>:|"|||{:}_!(@)(#*!@*#&!(@#*&£§§§))))``````)");
+
+  EXPECT_XATTR_SET("Setting attribute with just single quotes",
+                    argv[1], "justSingleQoutes", R"('')");
+
+  EXPECT_XATTR_SET("Setting attribute with just double quotes",
+                    argv[1], "justDoubleQoutes", "\"\"");
+
+  EXPECT_XATTR_SET("Setting attribute with just double quotes",
+                    argv[1], "valueInDoubleQoutes", R"("text")");
+
+  // EXPECT_XATTR_SET("Setting attribute with Json object",
+  //                  argv[1], "jsonObject", R"({"key":1})");
+
+  // EXPECT_XATTR_SET("Setting attribute with Json array",
+  //                  argv[1], "jsonObject", R"([{"key1":1},{"key2":2}])");
+
+
+  for(int i = 0; i<100; i++) {
+  EXPECT_XATTR_SET("Setting the same attribute quickly multiple times should work",
+                    argv[1], "volatileAttribute", std::to_string(i));
+}
+
 
   std::string binaryValue;
   binaryValue += "A";
@@ -179,5 +236,19 @@ int main(int argc, char **argv) {
   EXPECT_XATTR_NOTREPLACED("Non existing attributed should not be replaced with XATTR_REPLACE",
                            argv[1], "TO_BE_CREATED", "stringValue");
 
-  return 0;
+  // Test Big List of Naughty Strings
+  // int i = 0;
+  // for(auto& naughtyString : big_list_of_naughty_strings) {
+  // EXPECT_XATTR_SET("Setting naughty string <<<"+naughtyString+">>> value should work", argv[1],
+  //                  "naughtyString_"+std::to_string(i++), naughtyString);
+  // }
+
+  if(__failed_count) {
+    std::cout << __failed_count << " of " << __total_tests << " FAILED" << std::endl;
+  }
+  else {
+     std::cout << "All " << __total_tests << " PASSED" << std::endl;
+  }
+
+  return __failed_count > 0;
 }
