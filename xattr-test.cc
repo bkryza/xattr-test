@@ -261,9 +261,9 @@ int main(int argc, char **argv) {
   //
   int i = 0;
   for(auto& naughtyString : big_list_of_naughty_strings) {
-    if(naughtyString.length() < 127) {
+    if(naughtyString.length() < 127
+       && naughtyString != "￾") {
       if(!naughtyString.empty()
-          && naughtyString != "￾"
           && !std::all_of(naughtyString.begin(),naughtyString.end(),isspace)) {
         EXPECT_XATTR_SET("Setting naughty string <<<"+naughtyString+">>> name should work", argv[1],
                        naughtyString, "naughtyString_"+std::to_string(i));
